@@ -1,4 +1,7 @@
+/**/__pycache__/
+/**/result/
+/**/checkpoints/
 dataset/test/*
-*.pyc
-__pycache__/*
 dataset/preparation/testdata/*
+dataset/preparation/traindata/*
+dataset/train/*

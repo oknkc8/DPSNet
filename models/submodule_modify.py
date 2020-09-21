@@ -144,5 +144,11 @@ class feature_extraction(nn.Module):
 
         return output_feature
 
-
-
+class instance_segmentation(nn.Module):
+    def __init__(self):
+        super(instance_segmentation, self).__init__()
+        
+        self.conv1 = BasicBlock()
+    
+    def forward(self):
+        return

@@ -20,7 +20,6 @@ from logger import TermLogger, AverageMeter
 from itertools import chain
 from tensorboardX import SummaryWriter
 from sequence_folders import SequenceFolder
-import os
 
 import pdb
 
@@ -192,6 +191,7 @@ def train(args, train_loader, dpsnet, optimizer, epoch_size, train_writer):
     end = time.time()
 
     for i, (tgt_img, ref_imgs, ref_poses, intrinsics, intrinsics_inv, tgt_depth) in enumerate(train_loader):
+
         # measure data loading time
         data_time.update(time.time() - end)
         tgt_img_var = Variable(tgt_img.cuda())
@@ -200,8 +200,6 @@ def train(args, train_loader, dpsnet, optimizer, epoch_size, train_writer):
         intrinsics_var = Variable(intrinsics.cuda())
         intrinsics_inv_var = Variable(intrinsics_inv.cuda())
         tgt_depth_var = Variable(tgt_depth.cuda()).cuda()
-
-        #pdb.set_trace()
 
         # compute output
         pose = torch.cat(ref_poses_var,1)

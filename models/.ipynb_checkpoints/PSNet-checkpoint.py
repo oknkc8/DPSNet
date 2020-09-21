@@ -8,8 +8,6 @@ import math
 from models.submodule import *
 from inverse_warp import inverse_warp
 
-import pdb
-
 def convtext(in_planes, out_planes, kernel_size = 3, stride = 1, dilation = 1):
 
     return nn.Sequential(
@@ -91,30 +89,18 @@ class PSNet(nn.Module):
         intrinsics4[:,:2,:] = intrinsics4[:,:2,:] / 4
         intrinsics_inv4[:,:2,:2] = intrinsics_inv4[:,:2,:2] * 4
 
-        """
-        1. Reference image Feature Extraction
-        """
         refimg_fea     = self.feature_extraction(ref)
 
-
-        """
-        2. Target image Featrue Extraction
-           & Feature Volume Generation
-           & Cost Volume Geneartion
-        """
         disp2depth = Variable(torch.ones(refimg_fea.size(0), refimg_fea.size(2), refimg_fea.size(3))).cuda() * self.mindepth * self.nlabel
         for j, target in enumerate(targets):
             cost = Variable(torch.FloatTensor(refimg_fea.size()[0], refimg_fea.size()[1]*2, self.nlabel,  refimg_fea.size()[2],  refimg_fea.size()[3]).zero_()).cuda()
-            # Target Image Feature Extraction
             targetimg_fea  = self.feature_extraction(target)
             for i in range(self.nlabel):
                 depth = torch.div(disp2depth, i+1e-16)
                 targetimg_fea_t = inverse_warp(targetimg_fea, depth, pose[:,j], intrinsics4, intrinsics_inv4)
-                # Feature Volume Generation
                 cost[:, :refimg_fea.size()[1], i, :,:] = refimg_fea
                 cost[:, refimg_fea.size()[1]:, i, :,:] = targetimg_fea_t
 
-            # Cost Volume Generation
             cost = cost.contiguous()
             cost0 = self.dres0(cost)
             cost0 = self.dres1(cost0) + cost0
@@ -130,19 +116,11 @@ class PSNet(nn.Module):
 
         costs = costs/len(targets)
 
-        #pdb.set_trace()
-
-        """
-        3. Cost Aggregation
-        """
         costss = Variable(torch.FloatTensor(refimg_fea.size()[0], 1, self.nlabel,  refimg_fea.size()[2],  refimg_fea.size()[3]).zero_()).cuda()
         for i in range(self.nlabel):
             costt = costs[:, :, i, :, :]
             costss[:, :, i, :, :] = self.convs(torch.cat([refimg_fea, costt],1)) + costt
 
-        """
-        4. Depth Regression
-        """
         costs = F.upsample(costs, [self.nlabel,ref.size()[2],ref.size()[3]], mode='trilinear')
         costs = torch.squeeze(costs,1)
         pred0 = F.softmax(costs,dim=1)

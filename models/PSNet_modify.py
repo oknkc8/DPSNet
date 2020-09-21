@@ -97,6 +97,8 @@ class PSNet(nn.Module):
         refimg_fea     = self.feature_extraction(ref)
 
 
+        #inst_seg_fea =
+
         """
         2. Target image Featrue Extraction
            & Feature Volume Generation
@@ -130,7 +132,7 @@ class PSNet(nn.Module):
 
         costs = costs/len(targets)
 
-        #pdb.set_trace()
+        pdb.set_trace()
 
         """
         3. Cost Aggregation
